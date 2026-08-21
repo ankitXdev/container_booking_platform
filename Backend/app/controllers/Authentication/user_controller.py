@@ -15,9 +15,11 @@ def user_registration_service(user: UserCreate, db: Session):
 
 
 def user_login_service(user: LoginUser, db: Session):
-
-    login_user_service(user, db)
+    existing_user, access_token = login_user_service(user, db)
 
     return {
-        "message": "Login successful"
+        "message": "Login successful",
+        "name": existing_user.name,
+        "access_token": access_token,
+        "token_type": "bearer"
     }

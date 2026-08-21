@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.models.user_model import users
 from app.utils.password import hash_password, verify_password
+from app.security.jwt import create_access_token
 
 
 def register_user(user, db: Session):
@@ -54,8 +55,7 @@ def login_user(user, db: Session):
         existing_user.password
     ):
         raise ValueError("Invalid email or password")
-
-    return existing_user
-
-def logout_user(user, db: Session):
     
+    access_token = create_access_token(existing_user.user_id)
+
+    return existing_user,access_token
