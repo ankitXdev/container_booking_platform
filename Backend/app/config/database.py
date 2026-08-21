@@ -1,8 +1,8 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine,text
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import text
+from sqlalchemy.ext.declarative import declarative_base
 
 load_dotenv()
 
@@ -15,6 +15,15 @@ SessionLocal = sessionmaker(
     autoflush=False,
     bind=engine
 )
+
+Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 try:
     with engine.connect() as connection:
