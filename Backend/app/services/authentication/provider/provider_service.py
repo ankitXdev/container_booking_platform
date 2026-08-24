@@ -47,3 +47,23 @@ def register_provider(provider, current_user, db: Session):
     "status": "pending"
     }
 
+def search_provider(business_name: str, db: Session):
+    providers = (
+        db.query(provider_details)
+        .filter(
+            provider_details.business_name.ilike(f"%{business_name}%")
+        )
+        .all()
+    )
+
+    result = []
+
+    for provider in providers:
+        result.append({
+            "business_name": provider.business_name,
+            "business_address": provider.business_address,
+            "contact": provider.contact,
+            "email": provider.user.email
+        })
+
+    return result
