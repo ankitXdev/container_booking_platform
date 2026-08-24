@@ -13,9 +13,12 @@ from app.schemas.Authentication.login_schema import (
     LoginResponse
 )
 
+from app.schemas.Authentication.logout_schema import LogoutResponse
+
 from app.controllers.Authentication.user_controller import (
     user_registration_service as register_user_controller,
-    user_login_service as login_user_controller
+    user_login_service as login_user_controller,
+    user_logout_service as logout_user_controller
 )
 
 #main code start from here
@@ -38,3 +41,7 @@ def login_user(
     db: Session = Depends(get_db)
 ):
     return login_user_controller(user, db)
+
+@router.post("/logout", response_model=LogoutResponse)
+def logout_user():
+    return logout_user_controller()

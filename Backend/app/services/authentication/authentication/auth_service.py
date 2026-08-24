@@ -9,7 +9,7 @@ def register_user(user, db: Session):
 
     # Business rule
     if user.role not in ["exporter", "provider"]:
-        raise ValueError("Invalid role")
+        raise ValueError("Invalid role") # yaha pr frontend pr two option honge exporter and provider in registration
 
     # Check if email already exists
     existing_user = (
@@ -59,3 +59,10 @@ def login_user(user, db: Session):
     access_token = create_access_token(existing_user.user_id)
 
     return existing_user,access_token
+
+
+def logout_user():
+
+    return {
+        "message": "Logout successful"
+    }

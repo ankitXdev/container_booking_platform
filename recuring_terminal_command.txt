@@ -1,0 +1,17 @@
+# Dummy user for testing login
+
+{
+  "email": "ankit@example.com",
+  "password": "ankit1234567891011121"
+}
+
+{
+  "business_name": "GreenField Agricultural Services",
+  "business_address": "12 Civil Lines, Agra, Uttar Pradesh, India",
+  "contact": "+91-9876543210"
+}
+
+
+# To start backend server for testing api 
+
+python -m uvicorn app.main:app --reload 

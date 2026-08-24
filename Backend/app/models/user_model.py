@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, String, Integer, Column
+from sqlalchemy import  String, Integer, Column
 from app.config.database import Base
 
 class users(Base):
