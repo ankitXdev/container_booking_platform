@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
 
 from app.models.user_model import users
+
 from app.utils.password import hash_password, verify_password
+
 from app.security.jwt import create_access_token
 
 
@@ -9,7 +11,7 @@ def register_user(user, db: Session):
 
     # Business rule
     if user.role not in ["exporter", "provider"]:
-        raise ValueError("Invalid role") # yaha pr frontend pr two option honge exporter and provider in registration
+        raise ValueError("Invalid role")
 
     # Check if email already exists
     existing_user = (
@@ -28,7 +30,7 @@ def register_user(user, db: Session):
     new_user = users(
         name=user.name,
         email=user.email,
-        password=hashed_password,
+        password_hash=hashed_password,
         role=user.role,
         status=user.status
     )
@@ -39,8 +41,9 @@ def register_user(user, db: Session):
 
     return new_user
 
+
 def login_user(user, db: Session):
-    
+
     existing_user = (
         db.query(users)
         .filter(users.email == user.email)
@@ -52,13 +55,13 @@ def login_user(user, db: Session):
 
     if not verify_password(
         user.password,
-        existing_user.password
+        existing_user.password_hash
     ):
         raise ValueError("Invalid email or password")
-    
+
     access_token = create_access_token(existing_user.user_id)
 
-    return existing_user,access_token
+    return existing_user, access_token
 
 
 def logout_user():

@@ -5,7 +5,7 @@ from app.models.provider_details_model import provider_details
 
 
 def register_provider(provider, current_user, db: Session):
-
+    
     # 1. User must have provider role
     if current_user.role != "provider":
         raise HTTPException(
@@ -24,9 +24,9 @@ def register_provider(provider, current_user, db: Session):
 
     if existing_provider:
         raise HTTPException(
-    status_code=409,
-    detail="Provider profile already exists"
-    )
+            status_code=409,
+            detail="Provider profile already exists"
+        )
 
     # 3. Create provider profile
     new_provider = provider_details(
@@ -42,9 +42,11 @@ def register_provider(provider, current_user, db: Session):
     db.commit()
     db.refresh(new_provider)
 
+    # 5. Return registration response
     return {
-    "message": "Provider registration successful",
-    "status": "pending"
+        "message": "Provider registration successful",
+        "provider_id": new_provider.provider_id,
+        "approval_status": new_provider.approval_status
     }
 
 def search_provider(business_name: str, db: Session):

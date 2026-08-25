@@ -1,7 +1,8 @@
 import jwt
+import os
 from datetime import datetime, timedelta, timezone
 
-SECRET_KEY = "your-long-random-secret-key"
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
 
 
