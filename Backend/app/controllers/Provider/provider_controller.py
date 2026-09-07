@@ -7,6 +7,7 @@ from app.services.authentication.provider.provider_service import (
     register_provider as register_provider_service,
     search_provider as search_provider_service,
     update_provider as update_provider_service,
+    get_provider_details as get_provider_details_service,
 )
 
 def register_provider(
@@ -33,6 +34,17 @@ def update_provider(
     return update_provider_service(
         provider_id,
         provider,
+        current_user,
+        db
+    )
+
+def get_provider_details(
+    provider_id: int,
+    current_user,
+    db: Session
+):
+    return get_provider_details_service(
+        provider_id,
         current_user,
         db
     )

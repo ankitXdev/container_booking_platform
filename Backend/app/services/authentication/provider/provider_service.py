@@ -116,3 +116,41 @@ def update_provider(
     return {
         "message": "Provider profile updated successfully"
     }
+
+def get_provider_details(
+    provider_id: int,
+    current_user,
+    db: Session
+):
+    # 1. Find the provider
+    existing_provider = (
+        db.query(provider_details)
+        .filter(
+            provider_details.provider_id == provider_id
+        )
+        .first()
+    )
+
+    # 2. Provider does not exist
+    if not existing_provider:
+        raise HTTPException(
+            status_code=404,
+            detail="Provider not found"
+        )
+
+    # 3. Normal users can only view approved providers
+    if existing_provider.approval_status != "approved":
+        raise HTTPException(
+            status_code=404,
+            detail="Provider not found"
+        )
+
+    # 4. Return provider details
+    return {
+        "provider_id": existing_provider.provider_id,
+        "business_name": existing_provider.business_name,
+        "business_address": existing_provider.business_address,
+        "contact": existing_provider.contact,
+        "email": existing_provider.user.email,
+        "approval_status": existing_provider.approval_status
+    }

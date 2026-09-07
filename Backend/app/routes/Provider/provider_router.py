@@ -17,10 +17,15 @@ from app.schemas.Provider.provider_update_schema import (
     ProviderUpdateResponse,
 )
 
+from app.schemas.Provider.provider_detail_schema import (
+    ProviderDetailResponse
+)
+
 from app.controllers.Provider.provider_controller import (
     register_provider as register_provider_controller,
     search_provider as search_provider_controller,
     update_provider as update_provider_controller,
+    get_provider_details as get_provider_details_controller,
 )
 
 from app.security.dependencies import get_current_user
@@ -59,6 +64,21 @@ def update_provider(
     return update_provider_controller(
         provider_id,
         provider,
+        current_user,
+        db
+    )
+
+@router.get(
+    "/{provider_id}",
+    response_model=ProviderDetailResponse
+)
+def get_provider_details(
+    provider_id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return get_provider_details_controller(
+        provider_id,
         current_user,
         db
     )
