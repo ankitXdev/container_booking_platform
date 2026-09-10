@@ -1,3 +1,12 @@
+/*
+|--------------------------------------------------------------------------
+| AuthInput
+|--------------------------------------------------------------------------
+| Reusable labelled input for auth forms.
+| Supports disabled state and aria-invalid for accessibility.
+|--------------------------------------------------------------------------
+*/
+
 const AuthInput = ({
   label,
   name,
@@ -8,13 +17,17 @@ const AuthInput = ({
   required = true,
   minLength,
   autoComplete,
+  disabled,
+  "aria-invalid": ariaInvalid,
 }) => {
   return (
     <div className="form-group">
 
-      <label htmlFor={name}>
-        {label}
-      </label>
+      {label && (
+        <label htmlFor={name}>
+          {label}
+        </label>
+      )}
 
       <input
         id={name}
@@ -26,6 +39,8 @@ const AuthInput = ({
         required={required}
         minLength={minLength}
         autoComplete={autoComplete}
+        disabled={disabled}
+        aria-invalid={ariaInvalid}
       />
 
     </div>

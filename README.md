@@ -4,6 +4,157 @@ A three-sided logistics marketplace that connects **small exporters** with **log
 
 The platform allows exporters to search for suitable container space, make bookings, and pay online. Logistics providers can list and manage their available container capacity, while administrators approve providers and monitor the platform.
 
+---
+
+## Getting Started
+
+### Prerequisites
+
+Make sure the following are installed on your machine:
+
+| Tool | Version | Notes |
+|---|---|---|
+| Python | 3.10+ | For the FastAPI backend |
+| Node.js | 18+ | For the React frontend |
+| npm | 9+ | Comes with Node.js |
+| PostgreSQL | 14+ | Or use a hosted DB (e.g. Neon) |
+
+---
+
+### 1. Clone the repository
+
+```bash
+git clone <your-repo-url>
+cd <project-folder>
+```
+
+---
+
+### 2. Start the Backend
+
+The backend is a **FastAPI** application using **SQLAlchemy** and **PostgreSQL**.
+
+#### a. Create and activate a virtual environment
+
+```bash
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# macOS / Linux
+python -m venv venv
+source venv/bin/activate
+```
+
+#### b. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+> If there is no `requirements.txt` yet, install manually:
+> ```bash
+> pip install fastapi uvicorn sqlalchemy psycopg2-binary python-dotenv passlib[bcrypt] python-jose[cryptography]
+> ```
+
+#### c. Set up environment variables
+
+Create a `.env` file inside the `Backend/` folder:
+
+```env
+DATABASE_URL=postgresql://<user>:<password>@<host>/<dbname>?sslmode=require
+JWT_SECRET_KEY=your_secret_key_here
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+#### d. Start the server
+
+```bash
+# Run from the project root (not inside Backend/)
+python -m uvicorn app.main:app --reload
+```
+
+The API will be live at: **http://localhost:8000**
+
+Interactive API docs: **http://localhost:8000/docs**
+
+---
+
+### 3. Start the Frontend
+
+The frontend is a **React** application built with **Vite**.
+
+#### a. Install dependencies
+
+```bash
+cd frontend
+npm install
+```
+
+#### b. Start the development server
+
+```bash
+npm run dev
+```
+
+The app will be live at: **http://localhost:5173**
+
+> The frontend is pre-configured to point to `http://localhost:8000` — make sure the backend is running first.
+
+---
+
+### 4. Running Both Together
+
+Open **two terminal windows** side by side:
+
+**Terminal 1 — Backend:**
+```bash
+# From the project root
+venv\Scripts\activate        # Windows
+python -m uvicorn app.main:app --reload
+```
+
+**Terminal 2 — Frontend:**
+```bash
+cd frontend
+npm run dev
+```
+
+---
+
+### 5. Running Tests
+
+```bash
+# Run all tests
+python -m pytest tests/ -v
+
+# Run a specific test file
+python -m pytest tests/auth_test -v
+python -m pytest tests/provider_test/detail/test_provider_details_service.py -v
+```
+
+---
+
+### 6. Seeding the Database
+
+```bash
+python -m database.seeding.seed_provider_data
+```
+
+---
+
+### Quick Reference
+
+| Service | URL |
+|---|---|
+| Frontend (React) | http://localhost:5173 |
+| Backend API (FastAPI) | http://localhost:8000 |
+| Swagger API Docs | http://localhost:8000/docs |
+| ReDoc API Docs | http://localhost:8000/redoc |
+
+---
+
 ## Problem Statement
 
 Small exporters often ship relatively small quantities, such as 500 kg, that do not justify booking an entire shipping container.

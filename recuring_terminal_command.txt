@@ -18,11 +18,11 @@ python -m uvicorn app.main:app --reload
 
 # to start testing script example (individual or unit test)
 
-python -m pytest tests/provider_test/test_provider_update_service.py -v
+python -m pytest tests/provider_test/detail/test_provider_details_service.py -v
 
 # to run interation test
 
-python -m pytest tests/auth_test -v
+python -m pytest tests/container_test -v
 
 # for seeding 
 
