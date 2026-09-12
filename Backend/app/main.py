@@ -31,17 +31,34 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 
-# CORS
+# =============================================================================
+# Production CORS Configuration
+# =============================================================================
+# Reads allowed origins from environment variable (e.g. CORS_ORIGINS or FRONTEND_URL)
+# Supports local development and automatic Vercel preview/production domains.
+default_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+env_cors = os.getenv("CORS_ORIGINS", "")
+allowed_origins = [origin.strip() for origin in env_cors.split(",") if origin.strip()] or default_origins
+
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url and frontend_url.strip() not in allowed_origins:
+    allowed_origins.append(frontend_url.strip())
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=allowed_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app|https://.*\.onrender\.com|https://.*\.netlify\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 
 # Routers
