@@ -138,6 +138,9 @@ const ProviderProfile = () => {
             <Link to="/provider/edit" className="btn btn-primary">
               Edit Profile
             </Link>
+            <Link to="/documents" className="btn btn-outline">
+              Upload Licenses & KYC
+            </Link>
             <Link to="/" className="btn btn-outline">
               Dashboard
             </Link>

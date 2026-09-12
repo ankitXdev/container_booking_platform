@@ -51,9 +51,10 @@ def search_containers(
     origin: str | None = None,
     destination: str | None = None,
     min_capacity_kg: float | None = None,
+    provider_id: int | None = None,
     db: Session = Depends(get_db)
 ):
-    return search_containers_controller(origin, destination, min_capacity_kg, db)
+    return search_containers_controller(origin, destination, min_capacity_kg, db, provider_id)
 
 
 @router.get("/{container_id}", response_model=ContainerDetailResponse)

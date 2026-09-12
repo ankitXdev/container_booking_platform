@@ -8,7 +8,7 @@ from app.models.provider_details_model import provider_details
 
 class container(Base):
 
-    __tablename__ = "container"
+    __tablename__ = "containers"
 
     container_id = Column(Integer, primary_key=True)
 

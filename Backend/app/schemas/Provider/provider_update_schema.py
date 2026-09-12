@@ -14,7 +14,7 @@ class ProviderUpdate(BaseModel):
 
     contact: str = Field(
         min_length=10,
-        max_length=15
+        max_length=100
     )
 
 

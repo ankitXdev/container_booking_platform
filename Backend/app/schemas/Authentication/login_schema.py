@@ -6,7 +6,8 @@ class LoginUser(BaseModel):
 
 class LoginResponse(BaseModel):
     message: str
-    name:str
+    name: str
     access_token: str
     token_type: str
+    role: str | None = None
 

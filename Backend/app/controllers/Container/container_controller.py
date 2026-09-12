@@ -18,9 +18,10 @@ def search_containers(
     origin,
     destination,
     min_capacity_kg,
-    db: Session
+    db: Session,
+    provider_id=None
 ):
-    return search_containers_service(origin, destination, min_capacity_kg, db)
+    return search_containers_service(origin, destination, min_capacity_kg, db, provider_id)
 
 
 def get_container_details(container_id: int, db: Session):

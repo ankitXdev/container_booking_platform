@@ -37,7 +37,17 @@ const ProviderRegistration = () => {
     e.preventDefault();
 
     if (!formData.business_name.trim()) {
-      setError("Business name is required.");
+      setError("Business name is required (min 2 characters).");
+      return;
+    }
+
+    if (!formData.business_address.trim() || formData.business_address.trim().length < 5) {
+      setError("Business address is required (minimum 5 characters).");
+      return;
+    }
+
+    if (!formData.contact.trim() || formData.contact.trim().length < 10) {
+      setError("Contact is required (minimum 10 characters - phone or email).");
       return;
     }
 
@@ -45,7 +55,11 @@ const ProviderRegistration = () => {
     setError("");
 
     try {
-      const data = await registerProvider(formData);
+      const data = await registerProvider({
+        business_name: formData.business_name.trim(),
+        business_address: formData.business_address.trim(),
+        contact: formData.contact.trim(),
+      });
 
       /*
        * Store provider_id in localStorage so ProviderProfile
@@ -117,7 +131,8 @@ const ProviderRegistration = () => {
 
             <div className="form-group">
               <label htmlFor="business_address">
-                Business Address
+                Business Address{" "}
+                <span style={{ color: "var(--autumn-ember)" }}>*</span>
               </label>
               <input
                 id="business_address"
@@ -125,21 +140,26 @@ const ProviderRegistration = () => {
                 type="text"
                 value={formData.business_address}
                 onChange={handleChange}
-                placeholder="Full address of your business"
+                placeholder="Full address of your business (min 5 characters)"
                 disabled={loading}
+                required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="contact">Contact</label>
+              <label htmlFor="contact">
+                Contact Phone or Email{" "}
+                <span style={{ color: "var(--autumn-ember)" }}>*</span>
+              </label>
               <input
                 id="contact"
                 name="contact"
                 type="text"
                 value={formData.contact}
                 onChange={handleChange}
-                placeholder="Phone number or business email"
+                placeholder="Phone number or contact email (min 10 characters)"
                 disabled={loading}
+                required
               />
             </div>
 

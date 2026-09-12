@@ -15,6 +15,22 @@ const getAuthHeaders = () => {
   };
 };
 
+const formatErrorMessage = (detail, fallback = "An error occurred") => {
+  if (!detail) return fallback;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail
+      .map((d) => {
+        const field = d.loc && d.loc.length > 1 ? `${d.loc[d.loc.length - 1]}: ` : "";
+        return `${field}${d.msg || JSON.stringify(d)}`;
+      })
+      .join("; ");
+  }
+  if (typeof detail === "object") {
+    return detail.msg || detail.message || JSON.stringify(detail);
+  }
+  return fallback;
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -45,13 +61,12 @@ export const registerProvider = async ({
 
   if (!response.ok) {
     throw new Error(
-      data.detail || "Failed to register provider"
+      formatErrorMessage(data.detail, "Failed to register provider")
     );
   }
 
   return data;
 };
-
 
 /*
 |--------------------------------------------------------------------------
@@ -78,13 +93,12 @@ export const searchProviders = async (businessName) => {
 
   if (!response.ok) {
     throw new Error(
-      data.detail || "Failed to search providers"
+      formatErrorMessage(data.detail, "Failed to search providers")
     );
   }
 
   return data;
 };
-
 
 /*
 |--------------------------------------------------------------------------
@@ -121,13 +135,12 @@ export const updateProvider = async (
 
   if (!response.ok) {
     throw new Error(
-      data.detail || "Failed to update provider"
+      formatErrorMessage(data.detail, "Failed to update provider")
     );
   }
 
   return data;
 };
-
 
 /*
 |--------------------------------------------------------------------------
@@ -152,7 +165,7 @@ export const getProviderDetails = async (providerId) => {
 
   if (!response.ok) {
     throw new Error(
-      data.detail || "Failed to fetch provider details"
+      formatErrorMessage(data.detail, "Failed to fetch provider details")
     );
   }
 

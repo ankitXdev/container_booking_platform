@@ -22,7 +22,7 @@ python -m pytest tests/provider_test/detail/test_provider_details_service.py -v
 
 # to run interation test
 
-python -m pytest tests/container_test -v
+python -m pytest tests/ -v
 
 # for seeding 
 

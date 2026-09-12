@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { searchProviders } from "../../services/providerService";
 import "../../assets/dashboard.css";
 
@@ -138,6 +139,14 @@ const SearchProviders = () => {
                   {provider.approval_status}
                 </span>
               )}
+
+              <Link
+                to={`/providers/${provider.provider_id}`}
+                className="btn btn-outline btn-sm"
+                style={{ flexShrink: 0 }}
+              >
+                View Profile & Fleet →
+              </Link>
             </div>
           ))}
         </div>

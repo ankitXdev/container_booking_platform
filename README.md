@@ -642,6 +642,7 @@ Possible features after the MVP:
 | [Setup](docs/SETUP.md) | Local development setup |
 | [Security](docs/SECURITY.md) | Authentication and security |
 | [Roadmap](docs/ROADMAP.md) | Development plan |
+| [Version 2.0 Roadmap](docs/VERSION_2_ROADMAP.md) | Full v2.0 product & technical specification |
 
 ---
 

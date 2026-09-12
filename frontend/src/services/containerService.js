@@ -70,13 +70,17 @@ export const searchContainers = async ({
   origin = "",
   destination = "",
   min_capacity_kg = "",
+  provider_id = null,
 } = {}) => {
   const params = new URLSearchParams();
 
-  if (origin.trim()) params.append("origin", origin.trim());
-  if (destination.trim()) params.append("destination", destination.trim());
+  if (origin && origin.trim()) params.append("origin", origin.trim());
+  if (destination && destination.trim()) params.append("destination", destination.trim());
   if (min_capacity_kg !== "" && min_capacity_kg !== null) {
     params.append("min_capacity_kg", min_capacity_kg);
+  }
+  if (provider_id !== null && provider_id !== undefined) {
+    params.append("provider_id", provider_id);
   }
 
   const url = `${API_URL}/containers/${
@@ -85,7 +89,7 @@ export const searchContainers = async ({
 
   const response = await fetch(url, {
     method: "GET",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
   });
 
   const data = await response.json();

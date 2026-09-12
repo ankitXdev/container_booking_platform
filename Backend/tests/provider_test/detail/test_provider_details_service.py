@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+from unittest.mock import MagicMock
 import pytest
 from fastapi import HTTPException
 
@@ -11,7 +13,20 @@ class MockUser:
     role = "exporter"
 
 
-def test_get_approved_provider_details(db):
+def test_get_approved_provider_details():
+    db = MagicMock()
+    mock_provider = SimpleNamespace(
+        provider_id=15,
+        business_name="ABC Logistics",
+        business_address="Mumbai, Maharashtra",
+        contact="9876543210",
+        approval_status="approved",
+        user=SimpleNamespace(
+            email="abc@example.com"
+        )
+    )
+    db.query.return_value.filter.return_value.first.return_value = mock_provider
+
     result = get_provider_details(
         provider_id=15,
         current_user=MockUser(),
@@ -26,7 +41,9 @@ def test_get_approved_provider_details(db):
     assert result["approval_status"] == "approved"
 
 
-def test_get_non_existing_provider(db):
+def test_get_non_existing_provider():
+    db = MagicMock()
+    db.query.return_value.filter.return_value.first.return_value = None
 
     with pytest.raises(HTTPException) as exc_info:
 
@@ -40,7 +57,13 @@ def test_get_non_existing_provider(db):
     assert exc_info.value.detail == "Provider not found"
 
 
-def test_get_pending_provider(db):
+def test_get_pending_provider():
+    db = MagicMock()
+    mock_provider = SimpleNamespace(
+        provider_id=16,
+        approval_status="pending"
+    )
+    db.query.return_value.filter.return_value.first.return_value = mock_provider
 
     with pytest.raises(HTTPException) as exc_info:
 
@@ -54,7 +77,13 @@ def test_get_pending_provider(db):
     assert exc_info.value.detail == "Provider not found"
 
 
-def test_get_rejected_provider(db):
+def test_get_rejected_provider():
+    db = MagicMock()
+    mock_provider = SimpleNamespace(
+        provider_id=17,
+        approval_status="rejected"
+    )
+    db.query.return_value.filter.return_value.first.return_value = mock_provider
 
     with pytest.raises(HTTPException) as exc_info:
 

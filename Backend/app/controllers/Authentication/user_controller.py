@@ -20,6 +20,7 @@ def user_login_service(user: LoginUser, db: Session):
     return {
         "message": "Login successful",
         "name": existing_user.name,
+        "role": existing_user.role,
         "access_token": access_token,
         "token_type": "bearer"
     }

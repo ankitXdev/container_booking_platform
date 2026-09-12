@@ -113,3 +113,19 @@
 - [ ] Logging
 - [ ] Monitoring
 - [ ] Backups
+
+---
+
+## Next Horizon: Version 2.0 (v2.0)
+
+For the comprehensive product and technical roadmap for **Version 2.0**, including:
+- Real-time IoT / AIS vessel GPS tracking
+- Multimodal logistics (Rail / ICD / Road drayage)
+- Spot bidding space auction
+- Automated e-BL (Bill of Lading) & shipping document vault
+- B2B Escrow milestone payouts
+- 3D container packing visualizer
+- In-app collaboration and carrier performance ratings
+
+👉 See the complete specification: [VERSION_2_ROADMAP.md](VERSION_2_ROADMAP.md)
+

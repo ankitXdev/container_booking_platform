@@ -89,12 +89,15 @@ def search_containers(
     origin: str | None,
     destination: str | None,
     min_capacity_kg: float | None,
-    db: Session
+    db: Session,
+    provider_id: int | None = None,
 ):
-    query = (
-        db.query(container)
-        .filter(container.is_available == True)
-    )
+    # When browsing the marketplace, only show available containers
+    # When viewing a specific provider's fleet, show all their containers
+    if provider_id is not None:
+        query = db.query(container).filter(container.provider_id == provider_id)
+    else:
+        query = db.query(container).filter(container.is_available == True)
 
     # Apply optional filters
     if origin:

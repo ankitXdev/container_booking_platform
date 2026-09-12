@@ -34,7 +34,15 @@ export const AuthProvider = ({ children }) => {
 
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser);
+        if (!parsed.role) {
+          parsed.role = parsed.email?.toLowerCase().includes("admin")
+            ? "admin"
+            : localStorage.getItem("provider_id")
+            ? "provider"
+            : "exporter";
+        }
+        setUser(parsed);
       } catch {
         localStorage.removeItem("user");
       }
@@ -55,6 +63,7 @@ export const AuthProvider = ({ children }) => {
     const userData = {
       name: data.name,
       email: email,
+      role: data.role || (email.toLowerCase().includes("admin") ? "admin" : "exporter"),
     };
 
     localStorage.setItem(

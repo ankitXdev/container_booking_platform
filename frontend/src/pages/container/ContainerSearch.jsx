@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { searchContainers } from "../../services/containerService";
+import useAuth from "../../hooks/useAuth";
 import "../../assets/dashboard.css";
 
 /*
@@ -9,6 +10,9 @@ import "../../assets/dashboard.css";
 |--------------------------------------------------------------------------
 | Public page. Calls GET /containers/ with optional filters.
 | Results shown as cards linking to ContainerDetail.
+| Role-aware:
+| - Exporters search available cargo space to book.
+| - Providers can toggle between their own fleet and platform marketplace.
 |--------------------------------------------------------------------------
 */
 
@@ -21,7 +25,72 @@ const formatDate = (dateStr) => {
   });
 };
 
+/** Returns "green" | "amber" | "red" based on free percentage */
+const capColor = (availPct) => {
+  if (availPct > 50) return "green";
+  if (availPct >= 20) return "amber";
+  return "red";
+};
+
+/** Visual capacity bar component */
+const CapacityBar = ({ total, available }) => {
+  const bookedKg   = total - available;
+  const freePct    = total > 0 ? Math.round((available / total) * 100) : 0;
+  const filledPct  = 100 - freePct;
+  const color      = capColor(freePct);
+
+  return (
+    <div className="cap-bar-wrap">
+      <div className="cap-bar-header">
+        <span>Capacity</span>
+        <span className={`cap-bar-pct ${color}`}>
+          {freePct}% free — {available.toLocaleString()} kg of {total.toLocaleString()} kg
+        </span>
+      </div>
+      <div className="cap-bar-track">
+        <div className="cap-bar-filled" style={{ width: `${filledPct}%` }} title={`Booked: ${bookedKg.toLocaleString()} kg`} />
+        <div className={`cap-bar-free ${color}`}   style={{ width: `${freePct}%`    }} title={`Free: ${available.toLocaleString()} kg`} />
+      </div>
+      <div className="cap-bar-legend">
+        <span><span className={`cap-bar-dot ${color}`} />{available.toLocaleString()} kg free</span>
+        <span><span className="cap-bar-dot grey" />{bookedKg.toLocaleString()} kg booked</span>
+      </div>
+    </div>
+  );
+};
+
+/** Enhanced route display for card */
+const RouteDisplay = ({ origin, destination, departureDate }) => (
+  <div className="route-display">
+    <div className="route-port">
+      <span className="route-port-icon">🏭</span>
+      <span className="route-port-name">{origin}</span>
+      <span className="route-port-code">Origin</span>
+    </div>
+    <div className="route-mid">
+      <span className="route-mid-ship">🚢</span>
+      <div className="route-mid-line" />
+    </div>
+    <div className="route-port">
+      <span className="route-port-icon">⚓</span>
+      <span className="route-port-name">{destination}</span>
+      <span className="route-port-code">Destination</span>
+    </div>
+    {departureDate && (
+      <span className="route-date-pill">
+        📅 {formatDate(departureDate)}
+      </span>
+    )}
+  </div>
+);
+
 const ContainerSearch = () => {
+  const { user } = useAuth();
+  const role = user?.role?.toLowerCase() || "exporter";
+  const isProvider = role === "provider";
+  const myProviderId = localStorage.getItem("provider_id");
+
+  const [fleetScope, setFleetScope] = useState("all"); // "all" | "mine"
   const [filters, setFilters] = useState({
     origin: "",
     destination: "",
@@ -33,22 +102,18 @@ const ContainerSearch = () => {
   const [error, setError] = useState("");
   const [searched, setSearched] = useState(false);
 
-  const isProvider = Boolean(localStorage.getItem("provider_id"));
-
-  const handleChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
-    if (error) setError("");
-  };
-
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const executeSearch = async (scope, currentFilters) => {
     setError("");
     setLoading(true);
     setSearched(true);
     setResults([]);
 
     try {
-      const data = await searchContainers(filters);
+      const searchParams = { ...currentFilters };
+      if (scope === "mine" && myProviderId) {
+        searchParams.provider_id = myProviderId;
+      }
+      const data = await searchContainers(searchParams);
       setResults(data);
     } catch (err) {
       setError(err.message || "Failed to search containers.");
@@ -57,8 +122,25 @@ const ContainerSearch = () => {
     }
   };
 
+  // If provider switches scope tabs
+  const handleScopeChange = (newScope) => {
+    setFleetScope(newScope);
+    executeSearch(newScope, filters);
+  };
+
+  const handleChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+    if (error) setError("");
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    executeSearch(fleetScope, filters);
+  };
+
   const handleReset = () => {
-    setFilters({ origin: "", destination: "", min_capacity_kg: "" });
+    const cleared = { origin: "", destination: "", min_capacity_kg: "" };
+    setFilters(cleared);
     setResults([]);
     setSearched(false);
     setError("");
@@ -69,10 +151,14 @@ const ContainerSearch = () => {
 
       {/* Page header */}
       <div className="page-header">
-        <span className="page-eyebrow">MARKETPLACE</span>
-        <h1>Browse Containers</h1>
+        <span className="page-eyebrow">
+          {isProvider ? "FLEET & MARKETPLACE" : "MARKETPLACE"}
+        </span>
+        <h1>{isProvider ? "Container Fleet & Departures" : "Browse Containers"}</h1>
         <p>
-          Search available container space by route or minimum capacity.
+          {isProvider
+            ? "Inspect your published container voyages or explore marketplace departures."
+            : "Search available container space by route or minimum capacity."}
           {isProvider && (
             <> &nbsp;
               <Link to="/containers/create" className="btn btn-primary btn-sm" style={{ marginLeft: 8 }}>
@@ -82,6 +168,26 @@ const ContainerSearch = () => {
           )}
         </p>
       </div>
+
+      {/* Provider Fleet Scope Tabs */}
+      {isProvider && myProviderId && (
+        <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+          <button
+            type="button"
+            className={`btn btn-sm ${fleetScope === "all" ? "btn-primary" : "btn-outline"}`}
+            onClick={() => handleScopeChange("all")}
+          >
+            🌐 All Marketplace Containers
+          </button>
+          <button
+            type="button"
+            className={`btn btn-sm ${fleetScope === "mine" ? "btn-primary" : "btn-outline"}`}
+            onClick={() => handleScopeChange("mine")}
+          >
+            🚢 My Fleet Only
+          </button>
+        </div>
+      )}
 
       {/* Filter bar */}
       <form onSubmit={handleSearch} className="filter-bar">
@@ -169,46 +275,45 @@ const ContainerSearch = () => {
 
                 {/* Route + availability */}
                 <div className="container-card-top">
-                  <div className="container-route">
-                    <span className="container-route-city">{c.origin}</span>
-                    <span className="container-route-arrow">→</span>
-                    <span className="container-route-city">{c.destination}</span>
-                  </div>
+                  <RouteDisplay
+                    origin={c.origin}
+                    destination={c.destination}
+                    departureDate={c.departure_date}
+                  />
                   <span className={`availability-badge ${c.is_available ? "available" : "unavailable"}`}>
-                    {c.is_available ? "Available" : "Unavailable"}
+                    {c.is_available ? "✓ Open" : "✕ Full"}
                   </span>
                 </div>
 
-                {/* Stats */}
-                <div className="container-card-stats">
-                  <div className="container-stat">
-                    <label>Available Capacity</label>
-                    <p>{c.available_capacity_kg.toLocaleString()} kg</p>
-                  </div>
-                  <div className="container-stat">
-                    <label>Price / kg</label>
-                    <p>₹{c.price_per_kg}</p>
-                  </div>
-                  <div className="container-stat">
-                    <label>Departure</label>
-                    <p>{formatDate(c.departure_date)}</p>
-                  </div>
-                  <div className="container-stat">
-                    <label>Total Capacity</label>
-                    <p>{c.total_capacity_kg.toLocaleString()} kg</p>
-                  </div>
-                </div>
+                {/* Capacity visualizer */}
+                <CapacityBar
+                  total={c.total_capacity_kg}
+                  available={c.available_capacity_kg}
+                />
 
                 {/* Footer */}
                 <div className="container-card-footer">
                   <p className="container-provider-name">
-                    Provider #{c.provider_id}
+                    <span style={{ fontWeight: 700, color: "var(--autumn-ember)" }}>
+                      ₹{c.price_per_kg}/kg
+                    </span>
+                    {" · "}
+                    <Link
+                      to={`/providers/${c.provider_id}`}
+                      style={{ color: "var(--text-secondary)", textDecoration: "underline", fontSize: 12 }}
+                    >
+                      Provider #{c.provider_id}
+                    </Link>
                   </p>
                   <Link
                     to={`/containers/${c.container_id}`}
-                    className="btn btn-outline btn-sm"
+                    className={`btn btn-sm ${role === "exporter" && c.is_available ? "btn-primary" : "btn-outline"}`}
                   >
-                    View Details
+                    {isProvider && myProviderId && String(c.provider_id) === String(myProviderId)
+                      ? "Manage Fleet ⚙️"
+                      : role === "exporter" && c.is_available
+                      ? "Book Space →"
+                      : "View Details →"}
                   </Link>
                 </div>
 

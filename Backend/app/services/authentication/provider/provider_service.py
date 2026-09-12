@@ -1,7 +1,11 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from fastapi import HTTPException
 
 from app.models.provider_details_model import provider_details
+from app.models.container_model import container
+from app.models.booking_model import booking
+from app.models.provider_document_model import provider_document
 
 
 def register_provider(provider, current_user, db: Session):
@@ -145,12 +149,68 @@ def get_provider_details(
             detail="Provider not found"
         )
 
-    # 4. Return provider details
+    # 4. Aggregate container stats
+    all_containers = (
+        db.query(container)
+        .filter(container.provider_id == provider_id)
+        .all()
+    )
+
+    total_containers_count = len(all_containers)
+    active_containers_count = sum(1 for c in all_containers if c.is_available)
+
+    # Unique routes (origin, destination) across all containers
+    seen_routes = set()
+    serviced_routes = []
+    for c in all_containers:
+        key = (c.origin, c.destination)
+        if key not in seen_routes:
+            seen_routes.add(key)
+            serviced_routes.append({"origin": c.origin, "destination": c.destination})
+
+    # Container IDs for booking lookups
+    container_ids = [c.container_id for c in all_containers]
+
+    # 5. Aggregate booking stats on this provider's containers
+    completed_bookings_count = 0
+    total_cargo_handled_kg = 0.0
+
+    if container_ids:
+        completed_bookings = (
+            db.query(booking)
+            .filter(
+                booking.container_id.in_(container_ids),
+                booking.status == "confirmed"
+            )
+            .all()
+        )
+        completed_bookings_count = len(completed_bookings)
+        total_cargo_handled_kg = sum(b.booked_capacity_kg for b in completed_bookings)
+
+    # 6. Check compliance / KYC verification
+    verified_doc = (
+        db.query(provider_document)
+        .filter(
+            provider_document.provider_id == provider_id,
+            provider_document.status == "VERIFIED"
+        )
+        .first()
+    )
+    compliance_verified = verified_doc is not None
+
+    # 7. Return enriched provider details
     return {
         "provider_id": existing_provider.provider_id,
         "business_name": existing_provider.business_name,
         "business_address": existing_provider.business_address,
         "contact": existing_provider.contact,
         "email": existing_provider.user.email,
-        "approval_status": existing_provider.approval_status
-    }
+        "approval_status": existing_provider.approval_status,
+        "created_at": getattr(existing_provider, "created_at", None),
+        "active_containers_count": active_containers_count,
+        "total_containers_count": total_containers_count,
+        "completed_bookings_count": completed_bookings_count,
+        "total_cargo_handled_kg": total_cargo_handled_kg,
+        "serviced_routes": serviced_routes,
+        "compliance_verified": compliance_verified,
+    }

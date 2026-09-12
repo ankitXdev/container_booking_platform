@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 class ProviderCreate(BaseModel):
     business_name: str = Field(min_length=2, max_length=100)
     business_address: str = Field(min_length=5, max_length=255)
-    contact: str = Field(min_length=10, max_length=15)
+    contact: str = Field(min_length=10, max_length=100)
 
 
 class ProviderResponse(BaseModel):

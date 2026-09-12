@@ -13,7 +13,7 @@ class provider_details(Base):
 
     user_id = Column(
         Integer,
-        ForeignKey("user.user_id"),
+        ForeignKey("users.user_id"),
         nullable=False,
         unique=True
     )
